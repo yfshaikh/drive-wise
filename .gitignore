@@ -1,3 +1,5 @@
 .env
 venv/
-
+server/fb-admin-sdk.json
+server/.env
+server/venv/
