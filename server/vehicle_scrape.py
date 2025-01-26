@@ -51,8 +51,20 @@ cars = cars_ref.stream()
 driver = webdriver.Chrome()
 driver.implicitly_wait(10)
 
+start_processing = False  # Add flag to control when to start processing
+
 for car in cars:
     car_data = car.to_dict()
+    
+    # Check if this is the 2018 4Runner
+    if car.id == '2018_4runner':
+        start_processing = True
+        continue
+    
+    # Skip until we find 2018_4runner
+    if not start_processing:
+        continue
+        
     year = car_data['year']
     model = car_data['name'].lower().replace(' ', '-')
     

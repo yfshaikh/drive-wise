@@ -21,15 +21,12 @@ const HomePage = () => {
   React.useEffect(() => {
     if (!token) {
       navigate('/signin');
+      console.log("No token, redirecting to signin");
       return;
     }
     
     try {
       const decoded = jwtDecode(token);
-      if (!decoded?.email) {
-        navigate('/signin');
-        return;
-      }
 
       // Check for existing quiz responses
       const checkQuizResponses = async () => {

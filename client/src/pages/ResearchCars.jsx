@@ -115,7 +115,16 @@ const ResearchCars = () => {
   );
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', p: 2 }}>
+    <Box sx={{ maxWidth: 600, mx: 'auto', p: 3, backgroundColor: '#f9f9f9', borderRadius: 2, boxShadow: 3 }}>
+      {/* Heading */}
+      <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', fontWeight: 'bold', mb: 3 }}>
+        Vehicle History Lookup: Drivewise Detective
+      </Typography>
+      <Typography variant="body1" sx={{ textAlign: 'center', mb: 3, color: 'text.secondary' }}>
+        Welcome to <strong>Drivewise Detective</strong>, your trusty sidekick for uncovering a vehicle's hidden past! Enter a 17-digit Vehicle Identification Number (VIN) below to reveal its history—junk records, salvage tales, insurance info, and more. Let’s solve the mystery of your ride!
+      </Typography>
+
+      {/* Search Form */}
       <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
         <TextField
           fullWidth
@@ -124,98 +133,103 @@ const ResearchCars = () => {
           value={vin}
           onChange={handleVinChange}
           error={error !== null}
-          helperText={error || 'Enter 17-digit VIN number'}
+          helperText={error || 'Enter a 17-digit VIN number'}
           inputProps={{
             maxLength: 17,
             style: { textTransform: 'uppercase' }
           }}
+          sx={{ flexGrow: 1 }}
         />
         <Button
           variant="contained"
           onClick={handleSearch}
           disabled={loading || vin.length !== 17}
           startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
+          sx={{ height: '56px', minWidth: '120px' }}
         >
           Search
         </Button>
       </Box>
 
+      {/* Loading Indicator */}
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
           <CircularProgress />
         </Box>
       )}
 
+      {/* Error Alert */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-{carData && (
-  <Card>
-    <CardContent>
-      <Typography variant="h6" gutterBottom>
-        Vehicle Information
-      </Typography>
-      <Box sx={{ display: 'grid', gap: 1 }}>
-        <Typography>
-          <strong>VIN:</strong> {carData.vin}
-        </Typography>
-
-        {/* Junk and Salvage Records */}
-        {carData.junk_and_salvage.length > 0 && (
-          <Box sx={{ mt: 2 }}>
+      {/* Vehicle Information Card */}
+      {carData && (
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
             <Typography variant="h6" gutterBottom>
-              Junk and Salvage Records
+              Vehicle Information
             </Typography>
-            {carData.junk_and_salvage.map((record, index) => (
-              <Box key={index} sx={{ mb: 2 }}>
-                <Typography>
-                  <strong>Reporting Entity:</strong> {record.reporting_entity}
-                </Typography>
-                <Typography>
-                  <strong>Location:</strong> {record.location}
-                </Typography>
-                <Typography>
-                  <strong>Date:</strong> {record.date}
-                </Typography>
-                <Typography>
-                  <strong>Disposition:</strong> {record.disposition}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        )}
+            <Box sx={{ display: 'grid', gap: 1 }}>
+              <Typography>
+                <strong>VIN:</strong> {carData.vin}
+              </Typography>
 
-        {/* Insurance Records */}
-        {carData.insurance_info.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Insurance Records
-            </Typography>
-            {carData.insurance_info.map((record, index) => (
-              <Box key={index} sx={{ mb: 2 }}>
-                <Typography>
-                  <strong>Company:</strong> {record.company}
-                </Typography>
-                <Typography>
-                  <strong>Location:</strong> {record.location}
-                </Typography>
-                <Typography>
-                  <strong>Date:</strong> {record.date}
-                </Typography>
-                <Typography>
-                  <strong>Disposition:</strong> {record.disposition}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        )}
-      </Box>
-    </CardContent>
-  </Card>
-)}
+              {/* Junk and Salvage Records */}
+              {carData.junk_and_salvage.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Junk and Salvage Records
+                  </Typography>
+                  {carData.junk_and_salvage.map((record, index) => (
+                    <Box key={index} sx={{ mb: 2 }}>
+                      <Typography>
+                        <strong>Reporting Entity:</strong> {record.reporting_entity}
+                      </Typography>
+                      <Typography>
+                        <strong>Location:</strong> {record.location}
+                      </Typography>
+                      <Typography>
+                        <strong>Date:</strong> {record.date}
+                      </Typography>
+                      <Typography>
+                        <strong>Disposition:</strong> {record.disposition}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              {/* Insurance Records */}
+              {carData.insurance_info.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Insurance Records
+                  </Typography>
+                  {carData.insurance_info.map((record, index) => (
+                    <Box key={index} sx={{ mb: 2 }}>
+                      <Typography>
+                        <strong>Company:</strong> {record.company}
+                      </Typography>
+                      <Typography>
+                        <strong>Location:</strong> {record.location}
+                      </Typography>
+                      <Typography>
+                        <strong>Date:</strong> {record.date}
+                      </Typography>
+                      <Typography>
+                        <strong>Disposition:</strong> {record.disposition}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
     </Box>
   );
 };

@@ -20,6 +20,7 @@ import Sidebar from "./components/Sidebar"
 import GoogleSignIn from "./components/GoogleSignIn"
 import ResearchCars from "./pages/ResearchCars"
 import CompareCarsPage from "./pages/CompareCarsPage"
+import ChatbotPage from "./pages/ChatbotPage"
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function AppContent() {
           <Route path="/signin" element={<GoogleSignIn onSignInSuccess={handleSignInSuccess}/>} />
           <Route path="/research" element={<ResearchCars />} />
           <Route path="/compare" element={<CompareCarsPage />} />
+          <Route path="/chatbot" element={<ChatbotPage />} />
         </Routes>
       </Box>
     </Box>

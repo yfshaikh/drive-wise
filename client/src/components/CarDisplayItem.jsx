@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardMedia, Typography, useTheme, Box, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import CompareIcon from '@mui/icons-material/Compare';
 import { useNavigate } from "react-router-dom";
 import { doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -109,7 +110,7 @@ const CarDisplayItem = ({ image, title, id }) => {
               {title}
             </Typography>
             <Tooltip title="Add to comparison" arrow>
-              <CompareArrowsIcon 
+              <CompareIcon 
                 onClick={handleCompareIconClick}
                 sx={{ 
                   color: theme.palette.primary.main,

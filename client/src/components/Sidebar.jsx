@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, Typography } from "@mui/material";
-import { Home, DirectionsCar, Info, Settings, Google } from "@mui/icons-material";
+import { Home, DirectionsCar, Info, Settings, Google, Compare } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useContext } from "react";
 import { UserContext } from "../context/UserContext";
+import SearchIcon from '@mui/icons-material/Search';
+import SmsIcon from '@mui/icons-material/Sms';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -53,8 +55,9 @@ const Sidebar = () => {
 
   const menuItems = [
     { text: "Home", icon: <Home />, path: "/home" },
-    { text: "Research cars", icon: <DirectionsCar />, path: "/research" },
-    { text: "Compare cars", icon: <Info />, path: "/compare" },
+    { text: "DriveWise Detective", icon: <SearchIcon />, path: "/research" },
+    { text: "Compare cars", icon: <Compare />, path: "/compare" },
+    { text: "Chatbot", icon: <SmsIcon />, path: "/chatbot" },
     // { text: "Settings", icon: <Settings />, path: "/settings" },
   ];
 

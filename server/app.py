@@ -9,6 +9,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from flask_cors import CORS, cross_origin
 import traceback
+from openai import OpenAI
 
 
 load_dotenv()
@@ -16,6 +17,8 @@ load_dotenv()
 apiKey = os.getenv('CARSXE_API_KEY')
 openai_api_key = os.getenv('OPENAI_API_KEY')
 print(f"API Key exists: {'Yes' if openai_api_key else 'No'}")
+
+llm = OpenAI(temperature=0.9, max_tokens=500)
 
 # Get the directory where the script is located
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -95,6 +98,53 @@ def format_car_report(data):
                 formatted_data["brand_info"].append(brand_record)
 
     return formatted_data
+
+def generate_greeting(context):
+
+    user_ref = db.collection('users').document(user_email)    
+    user_doc = user_ref.get()
+    print(f"Retrieved document snapshot - exists: {user_doc.exists}")
+
+    # Fetch quizResponses from the user's document
+    if user_doc.exists:
+        user_data = user_doc.to_dict()
+        quiz_responses = user_data.get('quizResponses', [])
+        
+        # Extract answers into an array
+        answers = [response.get('answer') for response in quiz_responses]
+        print("Quiz Answers:", answers)
+    else:
+        print("User document does not exist.")
+
+    prompt = f"""
+    You are an agent speaking with a representative from CBRE.
+    Your goal is to assist the representative to help them better understand tenant building emissions and sustainability practices.
+    
+    You provide follow-up questions that the representative may ask.
+    Use the data given to you to provide two follow-up questions they could ask to better understand their data.
+    
+    You provide your output in JSON format, for example:
+    ```
+    [
+        "What steps can we take to reduce tenant building emissions by 10% over the next year?",
+        "How can we improve our energy efficiency in tenant buildings to meet sustainability goals?"
+    ]
+    ```
+
+    Given the following data, provide questions that the representative may ask:
+    ```
+    {context}
+    ```
+    """
+    
+    result = None
+    while not result:
+        try:
+            output = llm(prompt)
+            result = json.loads(output[output.index('['):output.index(']')+1])[:2]
+        except:
+            pass
+    return result
 
 
 #API for user car query
@@ -204,7 +254,7 @@ def get_car_info():
     
     try:
         # Read data directly from rawjson.txt file
-        with open('server/rawjson.txt', 'r') as file:
+        with open(os.path.join(current_dir, "rawjson.txt"), 'r') as file:
             data = json.loads(file.read())
         formatted_data = format_car_report(data)
         
@@ -218,7 +268,6 @@ def get_car_info():
         error_msg = f'Error processing request: {str(e)}'
         print("\nError:", error_msg)
         return jsonify({'error': error_msg}), 500
-
 
 @app.route('/login', methods=['POST'])
 @cross_origin()
@@ -284,6 +333,29 @@ def login():
         print(f"Error type: {type(e).__name__}")
         print(f"Error traceback: {traceback.format_exc()}")
         return jsonify({'error': f'An error occurred during login: {str(e)}'}), 500
+
+@app.route('/chat', methods=['POST'])
+@cross_origin()
+def chat_with_bot():
+    data = request.json
+    user_prompt = data.get('prompt')
+    print('===========================')
+    print(user_prompt)
+    print('===========================')
+
+    # Ensure a prompt is provided
+    if not user_prompt:
+        return jsonify({"error": "No prompt provided"}), 400
+
+    # Get response from RAG instance using the query_embedding
+    response = llm(user_prompt)
+
+    print('===========================')
+    print(response)
+    print('===========================')
+
+    # Return the chatbot's response
+    return jsonify({"response": response})
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
