@@ -14,6 +14,8 @@ const CarDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [aiQuestion, setAiQuestion] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
   
 
   useEffect(() => {
@@ -50,9 +52,38 @@ const CarDetailsPage = () => {
     console.log("Car state updated. Loading:", loading, "Car:", car);
   }, [car, loading]);
 
-  const handleAskAI = () => {
-    // TODO: Implement AI question handling
-    console.log("AI Question:", aiQuestion);
+  const handleAskAI = async () => {
+    if (!aiQuestion.trim()) return;
+    
+    setIsAiLoading(true);
+    try {
+      const response = await fetch('http://localhost:8080/user_car_query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: aiQuestion,
+          model: car.name,
+          year: car.year,
+          make: "Toyota"
+        }),
+      });
+      
+      const data = await response.json();
+      setAiResponse(data.answer);
+    } catch (error) {
+      console.error('Error fetching AI response:', error);
+      setAiResponse('Sorry, there was an error processing your question.');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && aiQuestion.trim()) {
+      handleAskAI();
+    }
   };
 
   if (loading) {
@@ -140,25 +171,25 @@ const CarDetailsPage = () => {
             Key Specifications
           </Typography>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <div className="bg-[#324A5F]/5 p-4 rounded-xl hover:bg-[#324A5F]/10 transition-colors duration-300">
+            <div className="bg-[#324A5F]/5 p-4 rounded-xl transition-colors duration-300">
               <Typography variant="body1" className="text-[#1B2A41]">
                 <strong className="text-[#324A5F]">Body Style</strong>
                 <div className="mt-1">{car.body_style}</div>
               </Typography>
             </div>
-            <div className="bg-[#324A5F]/5 p-4 rounded-xl hover:bg-[#324A5F]/10 transition-colors duration-300">
+            <div className="bg-[#324A5F]/5 p-4 rounded-xl transition-colors duration-300">
               <Typography variant="body1" className="text-[#1B2A41]">
                 <strong className="text-[#324A5F]">Seating Capacity</strong>
                 <div className="mt-1">{car.seating_capacity}</div>
               </Typography>
             </div>
-            <div className="bg-[#324A5F]/5 p-4 rounded-xl hover:bg-[#324A5F]/10 transition-colors duration-300">
+            <div className="bg-[#324A5F]/5 p-4 rounded-xl transition-colors duration-300">
               <Typography variant="body1" className="text-[#1B2A41]">
                 <strong className="text-[#324A5F]">MPG</strong>
                 <div className="mt-1">{car.combined_mpg || car.combined_mpge}</div>
               </Typography>
             </div>
-            <div className="bg-[#324A5F]/5 p-4 rounded-xl hover:bg-[#324A5F]/10 transition-colors duration-300">
+            <div className="bg-[#324A5F]/5 p-4 rounded-xl transition-colors duration-300">
               <Typography variant="body1" className="text-[#1B2A41]">
                 <strong className="text-[#324A5F]">Drivetrain</strong>
                 <div className="mt-1">{car.drivetrain}</div>
@@ -170,23 +201,43 @@ const CarDetailsPage = () => {
         {/* AI Question Input */}
         <div className="mt-8 max-w-2xl">
           <Typography variant="h6" className="mb-3 flex items-center gap-2 text-[#324A5F]">
-            Ask about this car <AutoAwesomeIcon className="text-[#324A5F]" />
+            Ask AI <AutoAwesomeIcon className="text-[#324A5F]" />
           </Typography>
           <div className="flex items-center gap-2">
             <input
               type="text"
-              placeholder="Type your question..."
-              className="flex-1 p-3 border-2 border-[#324A5F]/20 rounded-lg focus:outline-none focus:border-[#324A5F] transition-colors duration-300"
+              placeholder="Is this car known for reliability?"
+              className="flex-1 p-3 border-2 border-[#324A5F]/20 rounded-lg focus:outline-none focus:border-[#324A5F] transition-colors duration-300 placeholder:italic"
               value={aiQuestion}
               onChange={(e) => setAiQuestion(e.target.value)}
             />
             <button
-              className="bg-[#324A5F] text-white px-6 py-3 rounded-lg hover:bg-[#1B2A41] transition-colors duration-300"
+              className={`px-6 py-3 rounded-lg transition-colors duration-300 hover:cursor-pointer ${
+                aiQuestion.trim() 
+                  ? 'bg-[#324A5F] text-white hover:bg-[#1B2A41]' 
+                  : 'bg-[#324A5F]/50 text-white cursor-not-allowed'
+              }`}
               onClick={handleAskAI}
+              disabled={!aiQuestion.trim()}
             >
               Ask
             </button>
           </div>
+          
+          {/* AI Response Section */}
+          {(isAiLoading || aiResponse) && (
+            <div className="mt-4 p-4 bg-[#CCC9DC]/10 rounded-xl">
+              {isAiLoading ? (
+                <div className="flex justify-center">
+                  <CircularProgress size={24} />
+                </div>
+              ) : (
+                <Typography variant="body1" className="text-[#1B2A41] whitespace-pre-line">
+                  {aiResponse}
+                </Typography>
+              )}
+            </div>
+          )}
         </div>
         
       </Card>

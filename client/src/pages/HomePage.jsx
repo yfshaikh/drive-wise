@@ -105,7 +105,7 @@ const HomePage = () => {
 
     const meetsSeats = !filters.seats || car.seating_capacity === filters.seats;
 
-    const meetsYear = !filters.yearRange || car.year === filters.yearRange;
+    const meetsYear = !filters.yearRange || String(car.year) === filters.yearRange;
 
     return meetsPrice && meetsSeats && meetsYear;
   });
@@ -171,14 +171,20 @@ const HomePage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4">
-        {filteredCars.map((car) => (
-          <CarDisplayItem 
-            key={car.docId} 
-            id={car.docId} 
-            image={car.images?.[0] || "/default-car-image.jpg"} 
-            title={`${Number(car.year)} ${car.name}`} 
-          />
-        ))}
+        {filteredCars.length > 0 ? (
+          filteredCars.map((car) => (
+            <CarDisplayItem 
+              key={car.docId} 
+              id={car.docId} 
+              image={car.images?.[0] || "/default-car-image.jpg"} 
+              title={`${Number(car.year)} ${car.name}`} 
+            />
+          ))
+        ) : (
+          <div className="col-span-full text-center py-8 text-gray-600">
+            No cars found matching your selected filters. Try adjusting your criteria.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -18,6 +18,8 @@ import CarDetailsPage from "./pages/CarDetailsPage"
 import Navbar from "./components/Navbar"
 import Sidebar from "./components/Sidebar"
 import GoogleSignIn from "./components/GoogleSignIn"
+import ResearchCars from "./pages/ResearchCars"
+import CompareCarsPage from "./pages/CompareCarsPage"
 
 function App() {
   return (

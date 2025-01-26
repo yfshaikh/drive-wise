@@ -98,16 +98,17 @@ def format_car_report(data):
 
 
 #API for user car query
-@app.route("/api/user_car_query", methods=['GET'])
+@app.route("/user_car_query", methods=['POST'])
+@cross_origin()
 def get_user_car_query():
 
     # Get parameters from request
-    make = request.args.get('make')
-    model = request.args.get('model')
-    year = request.args.get('year')
-    query = request.args.get('query')
+    make = request.json.get('make')
+    model = request.json.get('model')
+    year = request.json.get('year')
+    query = request.json.get('query')
     
-    # Validate required parameters
+    # Validate required parameters 
     if not all([make, model, year, query]):
         return jsonify({
             'error': 'Missing required parameters. Please provide make, model, year, and query.'
