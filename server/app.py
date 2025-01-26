@@ -9,11 +9,18 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from flask_cors import CORS, cross_origin
 import traceback
-from openai import OpenAI
-from server.agents import CarCostAnalysisAgent
 import asyncio
 from reccomendation import test_car_recommendation_system
-
+from langchain_community.llms import OpenAI
+from crewai import Agent
+from textwrap import dedent
+from langchain_openai import ChatOpenAI  # New import path
+from phi.agent import Agent
+from phi.model.openai import OpenAIChat
+from phi.tools.duckduckgo import DuckDuckGo
+import os
+import dotenv
+from tools.CarFinanceTools import CarFinanceTools
 
 
 
@@ -38,7 +45,7 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 app = Flask(__name__)
-cors = CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 def format_date(date_str):
@@ -110,7 +117,7 @@ def generate_recommendations(user_email):
     user_doc = user_ref.get()
     print(f"Retrieved document snapshot - exists: {user_doc.exists}")
 
-    # Fetch quizResponses from the user's document
+    # Initialize chat history if it doesn't exist
     if user_doc.exists:
         user_data = user_doc.to_dict()
         quiz_responses = user_data.get('quizResponses', [])
@@ -123,7 +130,9 @@ def generate_recommendations(user_email):
         print("Quiz Answers:", answers)
     else:
         print("User document does not exist.")
-    
+        # Initialize user data if the document does not exist
+        user_ref.set({'chat_history': []})  # Initialize chat history
+
     user_data = {
         "life_stage": answers[0],
         "age_range": answers[1],
@@ -141,6 +150,11 @@ def generate_recommendations(user_email):
     
     # Add recommendations to the user's document
     user_ref.update({'recommendations': recommendations})
+
+    # Add recommendation as a message from the AI in chat history
+    user_ref.update({
+        'chat_history': firestore.ArrayUnion([{"ai_response": f"Here are your car recommendations: {recommendations}"}])
+    })
     
     return recommendations
 
@@ -370,10 +384,26 @@ def login():
         print(f"Error traceback: {traceback.format_exc()}")
         return jsonify({'error': f'An error occurred during login: {str(e)}'}), 500
 
+def chat_agent():
+    return Agent(
+            model=OpenAIChat(id="gpt-3.5-turbo"),
+            markdown=False,
+            name="Car Financial Advisor",
+            description="You are an expert in cars and helping people achieve their financial goals. You can use the internet to search for relevant information if needed.",
+            instructions=[
+                "1. Assist users in understanding their car financing options and provide guidance on achieving their financial goals.",
+                "2. Use online resources to find relevant information about car models, financing options, and market trends.",
+                "3. Provide detailed recommendations including: optimal loan terms, monthly payment breakdowns, and total cost analyses. Format all monetary values as currency with two decimal places."
+            ],
+            tools=[DuckDuckGo()],
+            show_tool_calls=False,
+        )
+
 @app.route('/chat', methods=['POST'])
 @cross_origin()
 def chat_with_bot():
     data = request.json
+    user_email = data.get('user_email')  # Get user email from the request
     user_prompt = data.get('prompt')
     print('===========================')
     print(user_prompt)
@@ -383,31 +413,46 @@ def chat_with_bot():
     if not user_prompt:
         return jsonify({"error": "No prompt provided"}), 400
 
-    # Get response from RAG instance using the query_embedding
-    response = llm(user_prompt)
+    # Use the phi agent to get a response
+    response = chat_agent.run(user_prompt)
 
-    print('===========================')
-    print(response)
-    print('===========================')
+    # Initialize chat history in Firestore if it doesn't exist
+    user_ref = db.collection('users').document(user_email)
+    user_doc = user_ref.get()
+    
+    if user_doc.exists:
+        user_data = user_doc.to_dict()
+        chat_history = user_data.get('chat_history', [])
+    else:
+        chat_history = []
 
-    # Return the chatbot's response
-    return jsonify({"response": response})
+    # Append the user's prompt and AI's response to the chat history
+    chat_history.append({"user_prompt": user_prompt, "ai_response": response})
+
+    # Update the user's document with the new chat history
+    user_ref.update({'chat_history': chat_history})
+
+    # Return the chatbot's response along with the updated chat history
+    return jsonify({"response": response, "chat_history": chat_history})
 
 
 @app.route('/generate_greeting', methods=['POST'])
 @cross_origin()
 def generate_greeting():
     user_email = request.json.get('user_email')
+    first_name = request.json.get('first_name')
     user_ref = db.collection('users').document(user_email)    
     user_doc = user_ref.get()
     if user_doc.exists:
         user_data = user_doc.to_dict()
-        first_name = user_data.get('first_name', 'Guest')
         recommendations = user_data.get('recommendations')
         if not recommendations:
             recommendations = generate_recommendations(user_email)
-        return f"Hello, {first_name}! Here are your car recommendations based on the information you provided: {recommendations}"
-    return "Hello! How can I assist you today?"
+        return jsonify({
+            "message": f"Hello, {first_name}! Here are your car recommendations based on the information you provided.",
+            "recommendations": recommendations
+        })
+    return jsonify({"message": "Hello! How can I assist you today?"})
 
 
 if __name__ == '__main__':

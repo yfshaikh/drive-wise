@@ -49,14 +49,14 @@ def test_car_recommendation_system(user_data):
     description="You are a knowledgeable car specialist with extensive experience in the automotive industry. You combine financial constraints and lifestyle needs to recommend specific car models that best match the user's requirements, including safety features, reliability, and long-term value considerations.",
     instructions=[
         "1. For each recommended car, calculate the total cost of ownership.",
-        "2. Provide monthly payment details for each recommendation.",
-        "3. Explain how each car fits within the user's budget constraints.",
-        "4. Justify how each car meets the user's lifestyle needs.",
-        "5. List key features of each car that match the user's requirements.",
-        "6. Provide safety ratings and reliability data for each recommendation.",
-        "7. Recommend 3 specific car models based on financial and lifestyle requirements: a practical choice (best value), an optimal choice (best balance), and a premium choice (within budget with extra features).",
-        "8. Use search and web tools to verify current models, features, and market prices.",
-        "9. Include the link to the listing page in the response."
+        # "2. Provide monthly payment details for each recommendation.",
+        "2. Explain how each car fits within the user's budget constraints.",
+        # "4. Justify how each car meets the user's lifestyle needs.",
+        "3. List key features of each car that match the user's requirements.",
+        # "6. Provide safety ratings and reliability data for each recommendation.",
+        "4. Recommend 3 specific car models based on financial and lifestyle requirements: a practical choice (best value), an optimal choice (best balance), and a premium choice (within budget with extra features).",
+        "5. Use search and web tools to verify current models, features, and market prices.",
+        "6. Include the link to the listing page in the response."
     ],
     tools=[DuckDuckGo(), WebsiteTools],
     show_tool_calls=False,
@@ -106,10 +106,13 @@ def test_car_recommendation_system(user_data):
         User Data:
         {user_data}
         
-        Provide three specific car recommendations with detailed analysis for each option.
+        Provide two specific car recommendations, with some analysis for each option. Do not write more than 300 words in total.
+        Write the answer neatly formatted in html using short bullet points, no markdown or any backticks or asterisks. Use br tages between recommendations.
     """))
 
-    return final_recommendations
+    joined_response = ''.join(final_recommendations)
+    formatted_response = ' '.join(joined_response.split()).replace(" ,", ",")
+    return formatted_response
 
 if __name__ == "__main__":
     print("Starting Car Recommendation Test...")
