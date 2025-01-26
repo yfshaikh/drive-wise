@@ -98,3 +98,5 @@ class CarRecommendationTasks:
             expected_output="A list of three specific car recommendations with detailed analysis",
             agent=agent
         )
+        
+        
