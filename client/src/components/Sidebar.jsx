@@ -52,7 +52,7 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { text: "Home", icon: <Home />, path: "/" },
+    { text: "Home", icon: <Home />, path: "/home" },
     { text: "Research cars", icon: <DirectionsCar />, path: "/research" },
     { text: "Compare cars", icon: <Info />, path: "/compare" },
     { text: "Settings", icon: <Settings />, path: "/settings" },

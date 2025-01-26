@@ -6,6 +6,10 @@ import { UserProvider } from "./context/UserContext";
 import { UserContext } from "./context/UserContext";
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getDoc, doc } from "firebase/firestore";
+import { db } from "./firebase";
+import { jwtDecode } from "jwt-decode";
+
 // PAGES
 import LandingPage from "./pages/LandingPage"
 import UserInfoQuiz from "./pages/UserInfoQuiz"
@@ -63,18 +67,41 @@ function AppContent() {
 
 function AuthWrapper({ children }) {
   const token = sessionStorage.getItem("token");
-  console.log("APP TOKEN");
-  console.log(token);
+  let user = null;
+  if(token){
+    user = jwtDecode(token);
+  }
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    console.log("APP TOKEN");
-    console.log(token);
-    if (!token && location.pathname !== '/signin') {
-      navigate('/signin');
-    }
-  }, [token, navigate, location]);
+    const checkUserQuiz = async () => {
+      if (!token && location.pathname !== '/signin') {
+        navigate('/signin');
+        return;
+      }
+
+      if (token && user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.email));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (!userData.quizResponses && location.pathname !== '/') {
+              // Redirect to quiz if user hasn't completed it
+              navigate('/');
+            } else if (userData.quizResponses && location.pathname === '/') {
+              // Redirect to home if user has completed the quiz
+              navigate('/home');
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user document:", error);
+        }
+      }
+    };
+
+    checkUserQuiz();
+  }, [token, user, navigate, location]);
 
   return children;
 }
