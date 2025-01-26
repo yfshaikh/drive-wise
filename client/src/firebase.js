@@ -33,14 +33,9 @@ const storage = getStorage(app);
 // Get a reference to Firestore
 const db = getFirestore(app);
 
-/*
+
 const auth = getAuth();
-const user = auth.currentUser;
 
-if (!user) {
-  console.error("User not authenticated. Redirecting to login page...");
-  // Redirect to login or show an error message
-}
-*/
 
-export { storage, db };
+
+export { storage, db, auth };

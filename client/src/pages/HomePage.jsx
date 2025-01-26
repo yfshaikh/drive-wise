@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import CarDisplayItem from "../components/CarDisplayItem";
+import GoogleSignIn from "../components/GoogleSignIn";
 
 const HomePage = () => {
   const [cars, setCars] = useState([]);
@@ -24,9 +25,14 @@ const HomePage = () => {
     fetchCars();
   }, []);
 
+  const handleSignInSuccess = (user) => {
+    console.log("User signed in:", user);
+  };
+
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 p-6">
+    <GoogleSignIn onSignInSuccess={handleSignInSuccess}/>
       {cars.map((car) => (
         <CarDisplayItem 
           key={car.docId} 
