@@ -43,7 +43,7 @@ class CarRecommendationAgents:
             model=OpenAIChat(id="gpt-3.5-turbo"),
             tools=[DuckDuckGo()],
             name="Lifestyle Analyst",
-            description="You are an expert in matching vehicles to lifestyle needs, considering factors like family size, daily routines, hobbies, living environment, storage needs, safety, and environmental preferences to recommend vehicles that align with the user's lifestyle."
+            description="You are an expert in matching vehicles to lifestyle needs, considering factors like family size, daily routines, hobbies, living environment, storage needs, safety, and environmental preferences to recommend vehicles that align with the user's lifestyle.",
             instructions = [
                 "1. Research and analyze Vehicle categories that match the family size and composition",
                 "2. Research and analyze Space requirements based on lifestyle activities",
