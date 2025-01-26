@@ -55,7 +55,7 @@ const Sidebar = () => {
     { text: "Home", icon: <Home />, path: "/home" },
     { text: "Research cars", icon: <DirectionsCar />, path: "/research" },
     { text: "Compare cars", icon: <Info />, path: "/compare" },
-    { text: "Settings", icon: <Settings />, path: "/settings" },
+    // { text: "Settings", icon: <Settings />, path: "/settings" },
   ];
 
   return (
