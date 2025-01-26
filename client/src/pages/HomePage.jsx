@@ -3,9 +3,43 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import CarDisplayItem from "../components/CarDisplayItem";
 import GoogleSignIn from "../components/GoogleSignIn";
-
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
 const HomePage = () => {
   const [cars, setCars] = useState([]);
+  const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
+
+  React.useEffect(() => {
+    if (!token) {
+      navigate('/signin');
+      return;
+    }
+    
+    try {
+      const decoded = jwtDecode(token);
+      if (!decoded?.email) {
+        navigate('/signin');
+        return;
+      }
+
+      // Check for existing quiz responses
+      const checkQuizResponses = async () => {
+        const userDocRef = doc(db, 'users', decoded.email);
+        const docSnap = await getDoc(userDocRef);
+        
+        if (docSnap.exists() && !docSnap.data().quizResponses) {
+          navigate('/');
+        }
+      };
+
+      checkQuizResponses();
+    } catch (error) {
+      console.error('Invalid token:', error);
+      navigate('/signin');
+    }
+  }, [token, navigate]);
 
   useEffect(() => {
     const fetchCars = async () => {
