@@ -23,17 +23,7 @@ def test_car_recommendation_system(user_data):
     
     lifestyle_analyst = Assistant(
         name="Lifestyle Analyst",
-        description=[
-            "You are an expert in matching vehicles to lifestyle needs. You consider:",
-            "Family composition and size",
-            "Daily routines and commute patterns",
-            "Hobbies and recreational activities",
-            "Living environment (urban/suburban/rural)",
-            "Storage and cargo needs",
-            "Safety requirements",
-            "Environmental preferences",
-            "You provide detailed analysis of how different vehicle categories align with user's lifestyle patterns and requirements."
-        ],
+        description="You are an expert in matching vehicles to lifestyle needs, considering factors like family size, daily routines, hobbies, living environment, storage needs, safety, and environmental preferences to recommend vehicles that align with the user's lifestyle.",
         instructions = [
             "1. Research and analyze Vehicle categories that match the family size and composition",
             "2. Research and analyze Space requirements based on lifestyle activities",
@@ -56,7 +46,7 @@ def test_car_recommendation_system(user_data):
     
     car_specialist = Assistant(
     name="Car Specialist",
-    description=["You are a knowledgeable car specialist with extensive experience in the automotive industry. You combine financial constraints and lifestyle needs to recommend specific car models that best match the user's requirements, including safety features, reliability, and long-term value considerations."],
+    description="You are a knowledgeable car specialist with extensive experience in the automotive industry. You combine financial constraints and lifestyle needs to recommend specific car models that best match the user's requirements, including safety features, reliability, and long-term value considerations.",
     instructions=[
         "1. For each recommended car, calculate the total cost of ownership.",
         "2. Provide monthly payment details for each recommendation.",
@@ -75,30 +65,31 @@ def test_car_recommendation_system(user_data):
 
     financial_analysis = list(financial_analyst.run(
         [
-            "1. Analyze financing options for the following user profile:",
-            "2. User Profile: Annual Income Range - ${user_data['annual_income_range']}",
-            "3. User Profile: Credit Score - {user_data['credit_score']}",
-            "4. User Profile: Target Monthly Payment - ${user_data['target_monthly_payment']}",
-            "5. Based on the user profile, recommend financing options that align with their budget and credit score.",
-            "6. Provide a breakdown of potential loan terms, interest rates, and monthly payments.",
-            "7. Suggest affordable financing options that fall within the user's monthly budget and credit score constraints."
+            {"role": "user", "content": "1. Analyze financing options for the following user profile:", "type": "text"},
+            {"role": "user", "content": "2. User Profile: Annual Income Range - ${user_data['annual_income_range']}", "type": "text"},
+            {"role": "user", "content": "3. User Profile: Credit Score - {user_data['credit_score']}", "type": "text"},
+            {"role": "user", "content": "4. User Profile: Target Monthly Payment - ${user_data['target_monthly_payment']}", "type": "text"},
+            {"role": "user", "content": "5. Based on the user profile, recommend financing options that align with their budget and credit score.", "type": "text"},
+            {"role": "user", "content": "6. Provide a breakdown of potential loan terms, interest rates, and monthly payments.", "type": "text"},
+            {"role": "user", "content": "7. Suggest affordable financing options that fall within the user's monthly budget and credit score constraints.", "type": "text"}
         ]
     ))
+    
 
     
     lifestyle_analysis = list(lifestyle_analyst.run(
         [
-            "1. Analyze lifestyle requirements for vehicle recommendations based on the following user profile:",
-            "2. User Profile: Life Stage - {user_data['life_stage']}",
-            "3. User Profile: Age Range - {user_data['age_range']}",
-            "4. User Profile: Preferred Vehicle Categories - {user_data['vehicle_categories']}",
-            "5. User Profile: Primary Vehicle Uses - {user_data['primary_uses']}",
-            "6. User Profile: Vehicle Priorities - {user_data['vehicle_priorities']}",
-            "7. User Profile: Tech Preferences - {user_data['tech_preferences']}",
-            "8. User Profile: Preferred Vehicle Colors - {user_data['preferred_colors']}",
-            "9. Based on the user profile, recommend vehicle categories that align with their lifestyle needs.",
-            "10. Take into account safety, comfort, space, and technology preferences when making recommendations.",
-            "11. Provide additional suggestions based on the user's priorities and lifestyle constraints."
+            {"role": "user", "content": "1. Analyze lifestyle requirements for vehicle recommendations based on the following user profile:", "type": "text"},
+            {"role": "user", "content": "2. User Profile: Life Stage - {user_data['life_stage']}", "type": "text"},
+            {"role": "user", "content": "3. User Profile: Age Range - {user_data['age_range']}", "type": "text"},
+            {"role": "user", "content": "4. User Profile: Preferred Vehicle Categories - {user_data['vehicle_categories']}", "type": "text"},
+            {"role": "user", "content": "5. User Profile: Primary Vehicle Uses - {user_data['primary_uses']}", "type": "text"},
+            {"role": "user", "content": "6. User Profile: Vehicle Priorities - {user_data['vehicle_priorities']}", "type": "text"},
+            {"role": "user", "content": "7. User Profile: Tech Preferences - {user_data['tech_preferences']}", "type": "text"},
+            {"role": "user", "content": "8. User Profile: Preferred Vehicle Colors - {user_data['preferred_colors']}", "type": "text"},
+            {"role": "user", "content": "9. Based on the user profile, recommend vehicle categories that align with their lifestyle needs.", "type": "text"},
+            {"role": "user", "content": "10. Take into account safety, comfort, space, and technology preferences when making recommendations.", "type": "text"},
+            {"role": "user", "content": "11. Provide additional suggestions based on the user's priorities and lifestyle constraints.", "type": "text"}
         ]
     ))
 
