@@ -10,6 +10,9 @@ from firebase_admin import credentials, firestore
 from flask_cors import CORS, cross_origin
 import traceback
 from openai import OpenAI
+from reccomendation import test_car_recommendation_system
+
+
 
 
 load_dotenv()
@@ -18,7 +21,7 @@ apiKey = os.getenv('CARSXE_API_KEY')
 openai_api_key = os.getenv('OPENAI_API_KEY')
 print(f"API Key exists: {'Yes' if openai_api_key else 'No'}")
 
-llm = OpenAI(temperature=0.9, max_tokens=500)
+llm = OpenAI()
 
 # Get the directory where the script is located
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -99,8 +102,7 @@ def format_car_report(data):
 
     return formatted_data
 
-def generate_greeting(context):
-
+def generate_recommendations(user_email):
     user_ref = db.collection('users').document(user_email)    
     user_doc = user_ref.get()
     print(f"Retrieved document snapshot - exists: {user_doc.exists}")
@@ -109,42 +111,36 @@ def generate_greeting(context):
     if user_doc.exists:
         user_data = user_doc.to_dict()
         quiz_responses = user_data.get('quizResponses', [])
-        
+        # Check for recommendations field
+        recommendations = user_data.get('recommendations')
+        if recommendations:
+            return recommendations  # Return recommendations if they exist
         # Extract answers into an array
         answers = [response.get('answer') for response in quiz_responses]
         print("Quiz Answers:", answers)
     else:
         print("User document does not exist.")
+    
+    user_data = {
+        "life_stage": answers[0],
+        "age_range": answers[1],
+        "annual_income_range": answers[2],
+        "credit_score": answers[3],
+        "target_monthly_payment": answers[4],
+        "primary_uses": answers[5],
+        "vehicle_categories": answers[6],
+        "vehicle_priorities": answers[7],
+        "tech_preferences": answers[8],
+        "preferred_colors": answers[9],
+    }
 
-    prompt = f"""
-    You are an agent speaking with a representative from CBRE.
-    Your goal is to assist the representative to help them better understand tenant building emissions and sustainability practices.
+    recommendations = test_car_recommendation_system(user_data)
     
-    You provide follow-up questions that the representative may ask.
-    Use the data given to you to provide two follow-up questions they could ask to better understand their data.
+    # Add recommendations to the user's document
+    user_ref.update({'recommendations': recommendations})
     
-    You provide your output in JSON format, for example:
-    ```
-    [
-        "What steps can we take to reduce tenant building emissions by 10% over the next year?",
-        "How can we improve our energy efficiency in tenant buildings to meet sustainability goals?"
-    ]
-    ```
+    return recommendations
 
-    Given the following data, provide questions that the representative may ask:
-    ```
-    {context}
-    ```
-    """
-    
-    result = None
-    while not result:
-        try:
-            output = llm(prompt)
-            result = json.loads(output[output.index('['):output.index(']')+1])[:2]
-        except:
-            pass
-    return result
 
 
 #API for user car query
@@ -356,6 +352,23 @@ def chat_with_bot():
 
     # Return the chatbot's response
     return jsonify({"response": response})
+
+
+@app.route('/generate_greeting', methods=['POST'])
+@cross_origin()
+def generate_greeting():
+    user_email = request.json.get('user_email')
+    user_ref = db.collection('users').document(user_email)    
+    user_doc = user_ref.get()
+    if user_doc.exists:
+        user_data = user_doc.to_dict()
+        first_name = user_data.get('first_name', 'Guest')
+        recommendations = user_data.get('recommendations')
+        if not recommendations:
+            recommendations = generate_recommendations(user_email)
+        return f"Hello, {first_name}! Here are your car recommendations based on the information you provided: {recommendations}"
+    return "Hello! How can I assist you today?"
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
