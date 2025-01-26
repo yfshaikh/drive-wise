@@ -26,7 +26,8 @@ function GoogleSignIn({ onSignInSuccess }) {
                 await onSignInSuccess(user);
             }
 
-            navigate('/user-home');
+            sessionStorage.setItem("token", result.user.accessToken);
+
         } catch (error) {
             console.error('Error signing in with Google:', error);
             setError(error.message);
@@ -34,7 +35,15 @@ function GoogleSignIn({ onSignInSuccess }) {
     };
 
     return (
-        <>
+        <div className="min-h-screen flex flex-col items-center justify-center w-full max-w-md mx-auto p-6">
+            <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                    Welcome to DriveWise!
+                </h1>
+                <h2 className="text-gray-600">
+                    Please sign in to continue
+                </h2>
+            </div>
             <button 
                 onClick={handleGoogleSignIn}
                 className="flex items-center justify-between w-full px-6 py-2.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 border border-gray-300 rounded-md shadow-sm transition-colors duration-200"
@@ -51,7 +60,7 @@ function GoogleSignIn({ onSignInSuccess }) {
                     {error}
                 </div>
             )}
-        </>
+        </div>
     );
 }
 

@@ -5,6 +5,9 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 import json
+import firebase_admin
+from firebase_admin import credentials, firestore
+from flask_cors import CORS, cross_origin
 
 
 load_dotenv()
@@ -13,7 +16,21 @@ apiKey = os.getenv('CARSXE_API_KEY')
 openai_api_key = os.getenv('OPENAI_API_KEY')
 print(f"API Key exists: {'Yes' if openai_api_key else 'No'}")
 
+# Get the directory where the script is located
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Create the path to the credentials file
+cred_path = os.path.join(current_dir, "fb-admin-sdk.json")
+cred = credentials.Certificate(cred_path)
+firebase_admin.initialize_app(cred)
+
+# Initialize Firestore
+db = firestore.client()
+
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 def format_date(date_str):
     if not date_str:
         return ""
@@ -82,6 +99,7 @@ def format_car_report(data):
 #API for user car query
 @app.route("/api/user_car_query", methods=['GET'])
 def get_user_car_query():
+
     # Get parameters from request
     make = request.args.get('make')
     model = request.args.get('model')
@@ -149,6 +167,7 @@ def get_user_car_query():
         }), 500
     
     #API for Car Market Value Information
+
 @app.route("/api/car_marketvalue", methods=['GET'])
 def get_car_marketvalue():
     vin = request.args.get('vin')
@@ -207,6 +226,58 @@ def get_car_info():
         error_msg = f'Error processing request: {str(e)}'
         print("\nError:", error_msg)
         return jsonify({'error': error_msg}), 500
+
+
+@app.route('/login', methods=['POST'])
+@cross_origin()
+def login():
+
+    print("=== Login Request ===")
+    print(f"Request Method: {request.method}")
+    print(f"Request Headers: {dict(request.headers)}")
+    print(f"Request Body: {request.get_data(as_text=True)}")
+    
+    try:
+        print("Parsing request data...")
+        user_data = request.json
+        if not user_data:
+            print("No JSON data received")
+            return jsonify({'error': 'No data received'}), 400
+            
+        print(f"User data received: {json.dumps(user_data, indent=2)}")
+        
+        if not user_data.get('uid') or not user_data.get('email'):
+            print("Error: Invalid user data - missing uid or email")
+            return jsonify({'error': 'Invalid user data - missing uid or email'}), 400
+        
+        # Use email as document ID instead of UID
+        user_ref = db.collection('users').document(user_data['email'])
+        user_doc = user_ref.get()
+        print(f"Checking if user exists - Email: {user_data['email']}")
+        
+        if not user_doc.exists:
+            print(f"Creating new user with Email: {user_data['email']}")
+            user_ref.set({
+                'first_name': user_data.get('first_name', ''),
+                'last_name': user_data.get('last_name', ''),
+                'email': user_data['email'],
+                'photo_url': user_data.get('photo_url', ''),
+                'uid': user_data['uid'],
+                'created_at': firestore.SERVER_TIMESTAMP
+            })
+            print("User created successfully")
+            return jsonify({'message': 'User created successfully'}), 201
+        
+        print(f"User already exists - Email: {user_data['email']}")
+        return jsonify({'message': 'User already exists'}), 200
+        
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {str(e)}")
+        return jsonify({'error': 'Invalid JSON data'}), 400
+    except Exception as e:
+        print(f"Login error: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        return jsonify({'error': f'An error occurred during login: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)

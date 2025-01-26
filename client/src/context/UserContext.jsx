@@ -1,17 +1,29 @@
 import { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import { UserInterface, UserContextInterface } from "@/interfaces/interfaces";
 
-export const UserContext = createContext<UserContextInterface | null>(null);
+// Create context with default values
+export const UserContext = createContext({
+  token: null,
+  setToken: () => {},
+  userInfo: null,
+  setUserInfo: () => {}
+});
 
 export function UserProvider({ children }) {
   const [token, setToken] = useState(sessionStorage.getItem("token"));
-  const [userInfo, setUserInfo] = useState<UserInterface | null>(null);
+  const [userInfo, setUserInfo] = useState(null);
 
+  const isTokenValid = (token) => {
+    const decoded = jwtDecode(token);
+    return decoded.exp * 1000 > Date.now();
+  };
+  
   useEffect(() => {
-    if (token) {
+    if (token && isTokenValid(token)) {
+      sessionStorage.setItem("token", token);
       setUserInfo(jwtDecode(token));
-      console.log(userInfo);
+    } else {
+      setToken(null);
     }
   }, [token]);
 

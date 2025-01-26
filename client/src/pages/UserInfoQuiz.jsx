@@ -1,13 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import SingleChoiceQuestion from '../components/SingleChoiceQuestion';
 import MultiChoiceQuestion from '../components/MultiChoiceQuestion';
 import { motion } from 'framer-motion';
 import { questions } from '../questions';
+import { db } from '../firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 
 function UserInfoQuiz() {
+  const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
 
+  // Add useEffect to handle navigation and token decoding
+  React.useEffect(() => {
+    if (!token) {
+      navigate('/signin');
+      return;
+    }
+    
+    try {
+      const decoded = jwtDecode(token);
+      if (!decoded?.email) {
+        navigate('/signin');
+      }
+    } catch (error) {
+      console.error('Invalid token:', error);
+      navigate('/signin');
+    }
+  }, [token, navigate]);
+
+
+  // Add userInfo state
+  const [userInfo, setUserInfo] = useState(token ? jwtDecode(token) : null);
 
   const handleAnswer = (answer) => {
     const currentQ = questions[currentQuestion];
@@ -31,9 +58,33 @@ function UserInfoQuiz() {
       setCurrentQuestion(currentQuestion + 1);
     }
   };
-  const handleSubmit = () => {
-    // Here you would send the answers to your backend/agents
-    console.log('Quiz answers:', answers);
+  const handleSubmit = async () => {
+    try {
+      if (!userInfo?.email) {
+        console.error('No user email found');
+        return;
+      }
+
+      // Convert answers object to array format
+      const answersArray = Object.entries(answers).map(([questionId, answer]) => ({
+        questionId,
+        answer
+      }));
+
+      // Update the user's document in Firestore
+      const userDocRef = doc(db, 'users', userInfo.email);
+      await updateDoc(userDocRef, {
+        quizResponses: answersArray
+      });
+
+      console.log('Quiz answers saved successfully');
+      navigate('/home');
+      // You might want to redirect or show a success message here
+      
+    } catch (error) {
+      console.error('Error saving quiz answers:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   const currentQ = questions[currentQuestion];
@@ -44,6 +95,14 @@ function UserInfoQuiz() {
       
       {currentQuestion < questions.length ? (
         <>
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-8">
+            <div
+              className="bg-blue-500 h-2.5 rounded-full transition-all duration-300"
+              style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+            />
+          </div>
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -67,11 +126,11 @@ function UserInfoQuiz() {
             )}
   
             {/* Navigation section */}
-            <div className="flex items-center justify-between mt-6">
+            <div className="flex justify-between mt-6">
               {/* Back Button */}
               <button
                 onClick={handleBack}
-                disabled={currentQuestion === 0}
+                // disabled={currentQuestion === 0}
                 className={`px-4 py-2 rounded-md ${
                   currentQuestion === 0
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -80,15 +139,10 @@ function UserInfoQuiz() {
               >
                 Back
               </button>
-  
-              {/* Question Counter */}
-              <div className="text-gray-500">
-                Question {currentQuestion + 1} of {questions.length}
-              </div>
-  
+
               {/* Next/Finish Button */}
               <button
-                onClick={handleNext}
+                onClick={currentQuestion === questions.length - 1 ? handleSubmit : handleNext}
                 disabled={!answers[currentQ.id]}
                 className={`px-6 py-2 rounded-md transition-colors ${
                   answers[currentQ.id]
