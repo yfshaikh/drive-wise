@@ -4,7 +4,7 @@ import MultiChoiceQuestion from '../components/MultiChoiceQuestion';
 import { motion } from 'framer-motion';
 import { questions } from '../questions';
 import { db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,7 +14,7 @@ function UserInfoQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
 
-  // Add useEffect to handle navigation and token decoding
+  // Modify useEffect to check for existing quiz responses
   React.useEffect(() => {
     if (!token) {
       navigate('/signin');
@@ -25,7 +25,20 @@ function UserInfoQuiz() {
       const decoded = jwtDecode(token);
       if (!decoded?.email) {
         navigate('/signin');
+        return;
       }
+
+      // Check for existing quiz responses
+      const checkQuizResponses = async () => {
+        const userDocRef = doc(db, 'users', decoded.email);
+        const docSnap = await getDoc(userDocRef);
+        
+        if (docSnap.exists() && docSnap.data().quizResponses) {
+          navigate('/home');
+        }
+      };
+
+      checkQuizResponses();
     } catch (error) {
       console.error('Invalid token:', error);
       navigate('/signin');
@@ -65,25 +78,35 @@ function UserInfoQuiz() {
         return;
       }
 
-      // Convert answers object to array format
       const answersArray = Object.entries(answers).map(([questionId, answer]) => ({
         questionId,
         answer
       }));
 
-      // Update the user's document in Firestore
       const userDocRef = doc(db, 'users', userInfo.email);
-      await updateDoc(userDocRef, {
-        quizResponses: answersArray
-      });
+      
+      // Check if document exists
+      const docSnap = await getDoc(userDocRef);
+      
+      if (!docSnap.exists()) {
+        // Create the document if it doesn't exist
+        await setDoc(userDocRef, {
+          email: userInfo.email,
+          quizResponses: answersArray,
+          created_at: new Date()
+        });
+      } else {
+        // Update existing document
+        await updateDoc(userDocRef, {
+          quizResponses: answersArray
+        });
+      }
 
       console.log('Quiz answers saved successfully');
       navigate('/home');
-      // You might want to redirect or show a success message here
       
     } catch (error) {
       console.error('Error saving quiz answers:', error);
-      // You might want to show an error message to the user here
     }
   };
 
