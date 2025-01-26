@@ -7,34 +7,9 @@ from dotenv import load_dotenv
 from textwrap import dedent
 from tools.CarFinanceTools import calculate_monthly_payment, calculate_max_car_price, calculate_loan_amount, calculate_interest_rate
 
-def test_car_recommendation_system():
+def test_car_recommendation_system(user_data):
     load_dotenv()
     
-    # Test user data
-    user_data = {
-        # Financial Information
-        "annual_income": 85000,
-        "credit_score": 720,
-        "monthly_budget": 500,
-        "down_payment": 5000,
-        
-        # Lifestyle Information
-        "family_status": "married",
-        "children": 2,
-        "living_area": "suburban",
-        "primary_use": "family transport and commuting",
-        "hobbies": ["camping", "sports", "home improvement"],
-        "commute": "30 miles daily",
-        
-        # Preferences
-        "preferred_features": [
-            "safety",
-            "fuel efficiency",
-            "cargo space",
-            "comfortable ride"
-        ]
-    }
-
     # Initialize assistants with specific roles
     financial_analyst = Assistant(
         name="Financial Analyst",

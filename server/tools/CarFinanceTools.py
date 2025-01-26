@@ -35,22 +35,22 @@ class CarFinanceTools:
             "total_interest": round(total_interest, 2)
         }
 
-def get_finance_tools():
-    tools = [
-        Tool(
-            name="Monthly Payment Calculator",
-            func=CarFinanceTools.calculate_monthly_payment,
-            description="Calculate monthly car payment given principal, annual interest rate, and loan term in years"
-        ),
-        Tool(
-            name="Maximum Car Price Calculator",
-            func=CarFinanceTools.calculate_max_car_price,
-            description="Calculate maximum affordable car price based on monthly budget, interest rate, and loan term"
-        ),
-        Tool(
-            name="Total Cost Calculator",
-            func=CarFinanceTools.calculate_total_cost,
-            description="Calculate total cost of car ownership including monthly payments, total payments, and total interest"
-        )
-    ]
-    return tools
+    def get_finance_tools():
+        tools = [
+            Tool(
+                name="Monthly Payment Calculator",
+                func=CarFinanceTools.calculate_monthly_payment,
+                description="Calculate monthly car payment given principal, annual interest rate, and loan term in years"
+            ),
+            Tool(
+                name="Maximum Car Price Calculator",
+                func=CarFinanceTools.calculate_max_car_price,
+                description="Calculate maximum affordable car price based on monthly budget, interest rate, and loan term"
+            ),
+            Tool(
+                name="Total Cost Calculator",
+                func=CarFinanceTools.calculate_total_cost,
+                description="Calculate total cost of car ownership including monthly payments, total payments, and total interest"
+            )
+        ]
+        return tools

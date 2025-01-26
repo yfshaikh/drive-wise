@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 
 const ChatbotPage = () => {
@@ -10,13 +12,22 @@ const ChatbotPage = () => {
   const [followUpQuestions, setFollowUpQuestions] = useState([]);
   const [cancelTyping, setCancelTyping] = useState(false);
   const [botResponseCount, setBotResponseCount] = useState(0);
+  const token = sessionStorage.getItem('token');
+  const navigate = useNavigate();
+
+  if (!token) {
+    navigate('/signin');
+    return;
+  }
+
+  const userInfo = jwtDecode(token);
 
   const typingIntervalRef = useRef(null);
   const activeRequestRef = useRef(null);
   const stopTypingFlag = useRef(false);
 
   useEffect(() => {
-    const greetUser = () => {
+    const greetUser = async () => {
       setMessages([{ role: "bot", content: "..." }]);
       setBotTyping(true);
 
@@ -26,15 +37,33 @@ const ChatbotPage = () => {
         dotCount++;
       }, 500);
 
-      setTimeout(() => {
+      try {
+        const res = await fetch(`http://localhost:8080/generate_greeting`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_email: userInfo.email }), 
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch greeting");
+        const data = await res.json();
+
         clearInterval(dotInterval);
         setDotAnimation("");
         setMessages((prev) => [
           ...prev.slice(0, -1),
-          { role: "bot", content: "Hello! Ask me about CBRE's Sustainability Initiatives!" },
+          { role: "bot", content: data.greeting }, // Display the greeting from the response
         ]);
+      } catch (error) {
+        console.error("Error fetching greeting:", error.message);
+        clearInterval(dotInterval);
+        setDotAnimation("");
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          { role: "bot", content: "Sorry, something went wrong." },
+        ]);
+      } finally {
         setBotTyping(false);
-      }, 2000);
+      }
     };
 
     greetUser();
@@ -118,7 +147,7 @@ const ChatbotPage = () => {
         typingIntervalRef.current = null;
         setCancelTyping(false);
         if (i >= words.length) {
-          setFollowUpQuestions(["Tell me more", "What’s next?"]);
+          setFollowUpQuestions(["Tell me more", "What's next?"]);
         }
         return;
       }
