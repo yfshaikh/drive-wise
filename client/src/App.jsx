@@ -4,6 +4,7 @@ import { theme } from './theme';
 
 // PAGES
 import LandingPage from "./pages/LandingPage"
+import UserInfoQuiz from "./pages/UserInfoQuiz"
 import HomePage from "./pages/HomePage"
 import CarDetailsPage from "./pages/CarDetailsPage"
 import Navbar from "./components/Navbar"
@@ -16,9 +17,7 @@ function App() {
         <div className="app">
           <Navbar />
           <Routes>
-            {/* <Route path = '/' element={<LandingPage />} /> */}
-            <Route path = '/' element={<HomePage />} />
-            <Route path = '/car/:id' element={<CarDetailsPage />} />
+            <Route path = '/' element={<LandingPage />} />
           </Routes>
         </div>
       </Router>
