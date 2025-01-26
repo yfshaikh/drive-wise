@@ -194,34 +194,24 @@ def get_car_marketvalue():
         return jsonify({'error': error_msg}), 500
         
 #API for Car History Information
-@app.route('/api/car-info', methods=['GET'])
+@app.route('/api/carinfo', methods=['GET'])
 def get_car_info():
     vin = request.args.get('vin')
     
     if not vin:
         return jsonify({'error': 'VIN parameter is required'}), 400
     
-    params = {
-        'key': apiKey,
-        'vin': vin
-    }
-    
     try:
-        response = requests.get('https://api.carsxe.com/history', params=params)
+        # Read data directly from rawjson.txt file
+        with open('server/rawjson.txt', 'r') as file:
+            data = json.loads(file.read())
+        formatted_data = format_car_report(data)
         
-        if response.status_code == 200:
-            data = response.json()
-            formatted_data = format_car_report(data)
-            
-            # Print to console for debugging
-            print("\nAPI Response for VIN:", vin)
-            print(json.dumps(formatted_data, indent=2))
-            
-            return jsonify(formatted_data)
-        else:
-            error_msg = f'API request failed with status code {response.status_code}'
-            print("\nError:", error_msg)
-            return jsonify({'error': error_msg}), response.status_code
+        # Print to console for debugging
+        print("\nAPI Response for VIN:", vin)
+        print(json.dumps(formatted_data, indent=2))
+        
+        return jsonify(formatted_data)
             
     except Exception as e:
         error_msg = f'Error processing request: {str(e)}'

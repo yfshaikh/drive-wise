@@ -18,6 +18,7 @@ import CarDetailsPage from "./pages/CarDetailsPage"
 import Navbar from "./components/Navbar"
 import Sidebar from "./components/Sidebar"
 import GoogleSignIn from "./components/GoogleSignIn"
+import ResearchCars from "./pages/ResearchCars"
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function AppContent() {
           <Route path="/" element={<UserInfoQuiz />} />
           <Route path="/car/:id" element={<CarDetailsPage />} />
           <Route path="/signin" element={<GoogleSignIn onSignInSuccess={handleSignInSuccess}/>} />
+          <Route path="/research" element={<ResearchCars />} />
         </Routes>
       </Box>
     </Box>
