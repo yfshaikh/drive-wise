@@ -66,6 +66,8 @@ def test_car_recommendation_system():
         lifestyle_analysis,
         user_data
     )
+    
+
 
     # Create and run crew
     crew = Crew(
