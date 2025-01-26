@@ -43,17 +43,7 @@ class CarRecommendationAgents:
             model=OpenAIChat(id="gpt-3.5-turbo"),
             tools=[DuckDuckGo()],
             name="Lifestyle Analyst",
-            description=[
-                "You are an expert in matching vehicles to lifestyle needs. You consider:",
-                "Family composition and size",
-                "Daily routines and commute patterns",
-                "Hobbies and recreational activities",
-                "Living environment (urban/suburban/rural)",
-                "Storage and cargo needs",
-                "Safety requirements",
-                "Environmental preferences",
-                "You provide detailed analysis of how different vehicle categories align with user's lifestyle patterns and requirements."
-            ],
+            description="You are an expert in matching vehicles to lifestyle needs, considering factors like family size, daily routines, hobbies, living environment, storage needs, safety, and environmental preferences to recommend vehicles that align with the user's lifestyle."
             instructions = [
                 "1. Research and analyze Vehicle categories that match the family size and composition",
                 "2. Research and analyze Space requirements based on lifestyle activities",
@@ -80,7 +70,7 @@ class CarRecommendationAgents:
             tools=[],
             team=[self.finance_tools, self.lifestyle_analyst_agent],
             name="Car Specialist",
-            description=["You are a knowledgeable car specialist with extensive experience in the automotive industry. You combine financial constraints and lifestyle needs to recommend specific car models that best match the user's requirements, including safety features, reliability, and long-term value considerations."],
+            description="You are a knowledgeable car specialist with extensive experience in the automotive industry. You combine financial constraints and lifestyle needs to recommend specific car models that best match the user's requirements, including safety features, reliability, and long-term value considerations.",
             instructions=[
                 "1. For each recommended car, calculate the total cost of ownership.",
                 "2. Provide monthly payment details for each recommendation.",
