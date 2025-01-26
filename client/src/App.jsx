@@ -21,6 +21,7 @@ import GoogleSignIn from "./components/GoogleSignIn"
 import ResearchCars from "./pages/ResearchCars"
 import CompareCarsPage from "./pages/CompareCarsPage"
 import ChatbotPage from "./pages/ChatbotPage"
+import FuelPage from "./pages/FuelPage"
 
 function App() {
   return (
@@ -65,6 +66,7 @@ function AppContent() {
           <Route path="/research" element={<ResearchCars />} />
           <Route path="/compare" element={<CompareCarsPage />} />
           <Route path="/chatbot" element={<ChatbotPage />} />
+          <Route path="/fuel" element={<FuelPage />} />
         </Routes>
       </Box>
     </Box>

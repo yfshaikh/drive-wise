@@ -384,8 +384,7 @@ def login():
         print(f"Error traceback: {traceback.format_exc()}")
         return jsonify({'error': f'An error occurred during login: {str(e)}'}), 500
 
-def chat_agent():
-    return Agent(
+chat_agent = Agent(
             model=OpenAIChat(id="gpt-3.5-turbo"),
             markdown=False,
             name="Car Financial Advisor",
@@ -416,6 +415,9 @@ def chat_with_bot():
     # Use the phi agent to get a response
     response = chat_agent.run(user_prompt)
 
+    # Extract the content from the response
+    response_content = response.content if hasattr(response, 'content') else str(response)
+
     # Initialize chat history in Firestore if it doesn't exist
     user_ref = db.collection('users').document(user_email)
     user_doc = user_ref.get()
@@ -427,13 +429,13 @@ def chat_with_bot():
         chat_history = []
 
     # Append the user's prompt and AI's response to the chat history
-    chat_history.append({"user_prompt": user_prompt, "ai_response": response})
+    chat_history.append({"user_prompt": user_prompt, "ai_response": response_content})
 
     # Update the user's document with the new chat history
     user_ref.update({'chat_history': chat_history})
 
     # Return the chatbot's response along with the updated chat history
-    return jsonify({"response": response, "chat_history": chat_history})
+    return jsonify({"response": response_content, "chat_history": chat_history})
 
 
 @app.route('/generate_greeting', methods=['POST'])
@@ -443,15 +445,20 @@ def generate_greeting():
     first_name = request.json.get('first_name')
     user_ref = db.collection('users').document(user_email)    
     user_doc = user_ref.get()
+    
     if user_doc.exists:
         user_data = user_doc.to_dict()
         recommendations = user_data.get('recommendations')
+        
+        # Only generate recommendations if they are not present
         if not recommendations:
             recommendations = generate_recommendations(user_email)
+        
         return jsonify({
             "message": f"Hello, {first_name}! Here are your car recommendations based on the information you provided.",
             "recommendations": recommendations
         })
+    
     return jsonify({"message": "Hello! How can I assist you today?"})
 
 

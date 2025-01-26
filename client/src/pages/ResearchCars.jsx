@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   TextField,
@@ -116,12 +115,16 @@ const ResearchCars = () => {
 
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', p: 3, backgroundColor: '#f9f9f9', borderRadius: 2, boxShadow: 3 }}>
+      {/* Image */}
+      <Box sx={{ textAlign: 'center', mb: 3, display: 'flex', justifyContent: 'center' }}>
+        <img src="/detective.jpg" alt="Description of the image" style={{ maxWidth: '70%', height: 'auto' }} />
+      </Box>
       {/* Heading */}
       <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', fontWeight: 'bold', mb: 3 }}>
         Vehicle History Lookup: Drivewise Detective
       </Typography>
       <Typography variant="body1" sx={{ textAlign: 'center', mb: 3, color: 'text.secondary' }}>
-        Welcome to <strong>Drivewise Detective</strong>, your trusty sidekick for uncovering a vehicle's hidden past! Enter a 17-digit Vehicle Identification Number (VIN) below to reveal its history—junk records, salvage tales, insurance info, and more. Let’s solve the mystery of your ride!
+        Welcome to <strong>Drivewise Detective</strong>, your trusty sidekick for uncovering a vehicle's hidden past! Enter a 17-digit Vehicle Identification Number (VIN) below to reveal its history—junk records, salvage tales, insurance info, and more. Let's solve the mystery of your ride!
       </Typography>
 
       {/* Search Form */}
@@ -134,10 +137,6 @@ const ResearchCars = () => {
           onChange={handleVinChange}
           error={error !== null}
           helperText={error || 'Enter a 17-digit VIN number'}
-          inputProps={{
-            maxLength: 17,
-            style: { textTransform: 'uppercase' }
-          }}
           sx={{ flexGrow: 1 }}
         />
         <Button

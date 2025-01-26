@@ -9,13 +9,14 @@ import { useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import SearchIcon from '@mui/icons-material/Search';
 import SmsIcon from '@mui/icons-material/Sms';
+import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
   const [error, setError] = useState(null);
   const { setToken } = useContext(UserContext);
-
+  const currentPath = window.location.pathname; // Get the current path
 
   const handleGoogleSignIn = async () => {
     try {
@@ -58,6 +59,7 @@ const Sidebar = () => {
     { text: "DriveWise Detective", icon: <SearchIcon />, path: "/research" },
     { text: "Compare cars", icon: <Compare />, path: "/compare" },
     { text: "Chatbot", icon: <SmsIcon />, path: "/chatbot" },
+    { text: "Fuel Economy", icon: <LocalGasStationIcon />, path: "/fuel" },
     // { text: "Settings", icon: <Settings />, path: "/settings" },
   ];
 
@@ -85,6 +87,7 @@ const Sidebar = () => {
               sx={{
                 cursor: 'pointer',
                 color: "#ffffff",
+                bgcolor: currentPath === item.path ? "primary.dark" : "transparent", // Highlight active tab
                 "&:hover": {
                   bgcolor: "primary.dark",
                 },

@@ -135,7 +135,7 @@ const CarDetailsPage = () => {
               <img
                 src={image}
                 alt={`Car image ${index + 1}`}
-                className="h-[25rem] w-full object-cover cursor-pointer hover:opacity-95 transition-opacity duration-300"
+                className="h-[25rem] w-full object-contain cursor-pointer hover:opacity-95 transition-opacity duration-300"
                 onClick={() => setSelectedImage(image)}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0C1821]/50 to-transparent" />

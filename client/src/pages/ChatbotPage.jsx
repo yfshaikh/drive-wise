@@ -2,16 +2,18 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { getFirestore, doc, getDoc } from "firebase/firestore"; // Import Firestore functions
+import { CircularProgress } from '@mui/material'; // Import CircularProgress from MUI
 
 const ChatbotPage = () => {
   const [messages, setMessages] = useState([]);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [dotAnimation, setDotAnimation] = useState("");
-  const [botTyping, setBotTyping] = useState(true);
+  const [botTyping, setBotTyping] = useState(false);
   const [followUpQuestions, setFollowUpQuestions] = useState([]);
   const [cancelTyping, setCancelTyping] = useState(false);
   const [botResponseCount, setBotResponseCount] = useState(0); // Track AI responses
+  const [recommendationsLoading, setRecommendationsLoading] = useState(true); // New state for recommendations loading
   const token = sessionStorage.getItem('token');
   if (!token) {
     navigate('/signin');
@@ -49,13 +51,19 @@ const ChatbotPage = () => {
     };
 
     const greetUser = async () => {
-      setMessages([{ role: "bot", content: "." }]);
+        setMessages([{ role: "bot", content: "..." }]);
+        setBotTyping(true);
+        setRecommendationsLoading(true); // Set loading state for recommendations
 
-      let dotCount = 1;
-      const dotInterval = setInterval(() => {
-        setDotAnimation(".".repeat((dotCount % 3) + 1));
-        dotCount++;
-      }, 500);
+        let dotCount = 1;
+        const dotInterval = setInterval(() => {
+        setDotAnimation((prev) => {
+            dotCount = (dotCount % 3) + 1;
+            return ".".repeat(dotCount);
+        });
+        }, 500);
+
+
 
       try {
         const res = await fetch(`http://localhost:8080/generate_greeting`, {
@@ -66,28 +74,35 @@ const ChatbotPage = () => {
 
         if (!res.ok) throw new Error("Failed to fetch greeting");
         const data = await res.json();
-
-        clearInterval(dotInterval);
-        setDotAnimation("");
-        setMessages((prev) => [
-          ...prev.slice(0, -1),
-          { role: "bot", content: `${data.message} ${data.recommendations}` }, // Display the greeting from the response
-        ]);
+  
+        setTimeout(() => {
+            clearInterval(dotInterval);
+            setDotAnimation("");
+            setMessages((prev) => [
+                ...prev.slice(0, -1), // Remove the loading message
+                { role: "bot", content: `${data.message} ${data.recommendations}` }, // Display the greeting from the response
+              ]);
+            setBotTyping(false);
+            setRecommendationsLoading(false); // Reset loading state for recommendations
+        }, 2000);
       } catch (error) {
         console.error("Error fetching greeting:", error.message);
         clearInterval(dotInterval);
         setDotAnimation("");
+        // Keep the loading message until the new message is added
         setMessages((prev) => [
-          ...prev.slice(0, -1),
+          ...prev.slice(0, -1), // Remove the loading message
           { role: "bot", content: "Sorry, something went wrong." },
         ]);
+        setRecommendationsLoading(false); // Reset loading state for recommendations
       } finally {
         setBotTyping(false);
       }
     };
 
-    fetchChatHistory(); // Call the function to fetch chat history
     greetUser(); // Call the existing greetUser function
+    fetchChatHistory(); // Call the function to fetch chat history
+    
   }, []);
 
   useEffect(() => console.log(messages), [messages]);
@@ -280,7 +295,7 @@ const ChatbotPage = () => {
 
   return (
       <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto p-4 border border-gray-700 rounded bg-gray-800 relative min-h-[600px]" style={{ padding: '1rem' }}>
+        <div className="flex-1 overflow-y-auto p-4 border border-gray-700 rounded relative min-h-[600px]" style={{ padding: '1rem' }}>
           {messages.map((message, index) => (
             <div
               key={index}
@@ -293,6 +308,12 @@ const ChatbotPage = () => {
               />
             </div>
           ))}
+          {recommendationsLoading && ( // Loader for recommendations
+            <div className="flex justify-center items-center h-full mb-4">
+                <CircularProgress />
+                <span className="ml-2">Getting ready to deliver personalized recommendations for you!</span>
+            </div>
+          )}
           {/* {followUpQuestions.length > 0 && botResponseCount < 2 && ( // Show follow-ups only if AI has less than 2 responses
             <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2">
               {followUpQuestions.map((question, index) => (
@@ -313,11 +334,11 @@ const ChatbotPage = () => {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 p-2 border border-gray-700 rounded bg-gray-800 text-white placeholder-gray-500"
+            className="flex-1 p-2 border border-gray-700 rounded text-black placeholder-gray-500"
             placeholder="Type your message"
           />
           <button
-            className={`text-white p-2 rounded ${botTyping ? 'bg-violet-600' : 'bg-blue-600'}`}
+            className={`text-white p-2 rounded ${botTyping ? 'bg-[#34507c]' : 'bg-[#4b6f8f]'}`}
             onClick={() => handleChat()}
             disabled={loading}
           >
