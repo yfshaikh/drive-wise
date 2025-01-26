@@ -40,7 +40,7 @@ function AppContent() {
 
   const handleSignInSuccess = (user) => {
     console.log("User signed in successfully:", user);
-    navigate('/home');
+    navigate('/');
   };
 
   return (
