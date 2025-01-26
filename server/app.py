@@ -10,6 +10,8 @@ from firebase_admin import credentials, firestore
 from flask_cors import CORS, cross_origin
 import traceback
 from openai import OpenAI
+from server.agents import CarCostAnalysisAgent
+import asyncio
 from reccomendation import test_car_recommendation_system
 
 
@@ -17,7 +19,8 @@ from reccomendation import test_car_recommendation_system
 
 load_dotenv()
 
-apiKey = os.getenv('CARSXE_API_KEY')
+apiKey = os.getenv('CAR_GURUS_API_KEY')
+apiKey = os.getenv('CAR_GURUS_API_KEY')
 openai_api_key = os.getenv('OPENAI_API_KEY')
 print(f"API Key exists: {'Yes' if openai_api_key else 'No'}")
 
@@ -141,7 +144,59 @@ def generate_recommendations(user_email):
     
     return recommendations
 
+    Given the following data, provide questions that the representative may ask:
+    ```
+    {context}
+    ```
+    """
+    
+    result = None
+    while not result:
+        try:
+            output = llm(prompt)
+            result = json.loads(output[output.index('['):output.index(']')+1])[:2]
+        except:
+            pass
+    return result
+cost_analysis_agent = CarCostAnalysisAgent()
 
+@app.route('/car_cost_analysis', methods=['GET'])
+async def car_cost_analysis():
+    make = request.args.get('make')
+    model = request.args.get('model')
+    year = request.args.get('year')
+    location = request.args.get('location')
+    
+    if not all([make, model, year, location]):
+        return jsonify({'error': 'Missing required parameters. Please provide make, model, year, and location.'}), 400
+    
+    try:
+        cost_analysis = await cost_analysis_agent.analyze_car_costs(make, model, year, location)
+        
+        maintenance_schedule = await cost_analysis_agent.get_maintenance_schedule(
+            make=make,
+            model=model,
+            year=year
+        )
+
+        # Get insurance analysis
+        insurance_analysis = await cost_analysis_agent.compare_insurance_rates(
+            make=make,
+            model=model,
+            year=year,
+            location=location
+        )
+        return jsonify({
+            'cost_analysis': cost_analysis,
+            'maintenance_schedule': maintenance_schedule,
+            'insurance_analysis': insurance_analysis
+        })
+
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to analyze car costs',
+            'details': str(e)
+        }), 500
 
 #API for user car query
 @app.route("/user_car_query", methods=['POST'])
