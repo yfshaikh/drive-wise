@@ -144,21 +144,6 @@ def generate_recommendations(user_email):
     
     return recommendations
 
-    Given the following data, provide questions that the representative may ask:
-    ```
-    {context}
-    ```
-    """
-    
-    result = None
-    while not result:
-        try:
-            output = llm(prompt)
-            result = json.loads(output[output.index('['):output.index(']')+1])[:2]
-        except:
-            pass
-    return result
-cost_analysis_agent = CarCostAnalysisAgent()
 
 @app.route('/car_cost_analysis', methods=['GET'])
 async def car_cost_analysis():
